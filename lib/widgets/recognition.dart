@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:FlutterMobilenet/services/tensorflow-service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:postgres/postgres.dart';
+import 'package:animated_background/animated_background.dart';
 
 
 class Recognition extends StatefulWidget {
@@ -53,8 +55,14 @@ class _RecognitionState extends State<Recognition> {
           // rebuilds the screen with the new recognitions
           setState(() {
             _currentRecognition = recognition;
-
+            
             first_class = capitalize(recognition[0]['label']);
+            if(first_class == 'Plastic_bags' || first_class == 'Plastic_brik' || first_class == 'Plastic_bottles'){
+              first_class = 'Plastic';
+            }else if (first_class == 'Computer' || first_class == "Microwave"){
+              first_class = 'Electronics';
+
+            }
             first_class_confidence = recognition[0]['confidence'];
             
           });
@@ -121,13 +129,18 @@ class _RecognitionState extends State<Recognition> {
                 ),
                 height: 200,
                 width: MediaQuery.of(context).size.width - 30,
-                padding: EdgeInsets.only(top: 15, left: 20, right: 10),
+                padding: EdgeInsets.only(top: 15, left: 10, right: 40),
                 child: Column(
                   children: widget.ready
                       ? <Widget>[
                           // shows recognition title
                           Align(
-                alignment: Alignment.centerLeft,
+                alignment: Alignment.center,
+                child: Text("Wrong classification? Feedback!", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w200)),
+
+            ),
+                          Align(
+                alignment: Alignment.center,
                 child: new IconButton(
                                  icon: new Icon(Icons.camera_alt, size: 50, color: Colors.black,),
                                 onPressed: () {
@@ -136,17 +149,18 @@ class _RecognitionState extends State<Recognition> {
               MaterialPageRoute(builder: (context) => const SecondRoute()),
             );
           },
+          
                                ),
 
             ),
-                Padding(
+            
+                new Container(
                   padding: EdgeInsets.fromLTRB(
-                    20, 20, 20, 20,
-                  ),),
+                    20, 20, 20, 0,
+                  ),
                           // shows recognitions list
-                          Align(
-                alignment: Alignment.center,
-                child: Text("PRUEBA", style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300)),
+
+                child: Text("You are reducing the co2 in the planet. It's time for change!", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w300)),
 
             ),
                         ]
@@ -176,17 +190,17 @@ class _RecognitionState extends State<Recognition> {
 
   getImage(){
     if(first_class == "Plastic"){
-      return "assets/images/amarillo.png";
-    }else if(first_class == "Paper"){
-      return "assets/images/papel.png";
-    }else if(first_class == "Cardboard"){
-      return "assets/images/papel.png";
+     return "assets/images/amarillo.png";
+    }else if(first_class == "Paper" || first_class == "Cardboard"){
+     return "assets/images/papel.png";
     }else if(first_class == "Glass"){
       return "assets/images/verde.png";
     }else if(first_class == "Batteries"){
       return "assets/images/contenedorPilas.png";
     }else if(first_class == "Waste"){
       return "assets/images/organico.png";
+    }else if(first_class == "Electronics"){
+      return "assets/images/localWasteFacility.png";
     }else{
       return "assets/images/organico.png";
     }
@@ -196,9 +210,7 @@ class _RecognitionState extends State<Recognition> {
   getLabel(){
     if(first_class == "Plastic"){
       return "Yellow container";
-    }else if(first_class == "Paper"){
-      return "Blue container";
-    }else if(first_class == "Cardboard"){
+    }else if(first_class == "Paper" || first_class == "Cardboard"){
       return "Blue container";
     }else if(first_class == "Glass"){
       return "Green container";
@@ -206,6 +218,8 @@ class _RecognitionState extends State<Recognition> {
       return "Battery container";
     }else if(first_class == "Waste"){
       return "Brown container";
+    }else if(first_class == "Electronics"){
+      return "Local facility";
     }else{
       return "Brown container";
     }
@@ -214,16 +228,16 @@ class _RecognitionState extends State<Recognition> {
   getColor(){
     if(first_class == "Plastic"){
       return Color.fromARGB(255, 170, 177, 69);
-    }else if(first_class == "Paper"){
-      return Color.fromARGB(255, 69, 128, 177);
-    }else if(first_class == "Cardboard"){
+    }else if(first_class == "Paper" || first_class == "Cardboard"){
       return Color.fromARGB(255, 69, 128, 177);
     }else if(first_class == "Glass"){
       return Color.fromARGB(255, 69, 177, 101);
     }else if(first_class == "Batteries"){
-      return Color.fromARGB(255, 87, 174, 231);
+      return Color.fromARGB(255, 241, 146, 36);
     }else if(first_class == "Waste"){
-      return Color.fromARGB(255, 197, 140, 53);
+      return Color.fromARGB(255, 197, 140, 53);;
+    }else if(first_class == "Electronics"){
+      return Color.fromARGB(255, 138, 132, 124);
     }else{
       return Color.fromARGB(255, 197, 140, 53);
     }
@@ -284,7 +298,8 @@ class _RecognitionState extends State<Recognition> {
                     ),
                     Container(
                       width: _barWitdth,
-                      child: Text(getLabel() + " " +(getFilter() * 100).toString() + '%', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300),),
+                      child: Text(getLabel(), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300),),
+                      //to debug: Text(getLabel() + " " +(getFilter() * 100).toString() + '%', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300),),
                     ),
                     
                   ],
@@ -386,31 +401,66 @@ class SecondRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Reporting object'),
+        backgroundColor: Colors.green.shade600,
       ),
+      
+      
       body: Center(
+        
+        
         child: new Column(
+          
           children: [
             new Container(
-              child: ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text('Go back!'),
-        ),
+              padding: EdgeInsets.fromLTRB(25, 100, 25, 20),
+              child: Image(
+              image: AssetImage('assets/images/recycle.gif'),
+              height: 160,
+              width: 160,
+            )
             ),
             new Container(
-              child: ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-            showAlertDialog(context);            
-
-          },
-          child: const Text('Send'),
-        ),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(25, 25, 25, 25),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Go Back!", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w300)),
+                  
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.green.shade600,
+                    shape: new RoundedRectangleBorder(
+                      borderRadius: new BorderRadius.circular(20.0),
+                    ),
+                  ),
+                ))
             ),
-            new Container(child: MyStatefulWidget()),
+            new Container(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(25, 25, 25, 25),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    showAlertDialog(context);
+                  },
+                  child: Text("Send", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w300)),
+                  
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.green.shade600,
+                    shape: new RoundedRectangleBorder(
+                      borderRadius: new BorderRadius.circular(20.0),
+                    ),
+                  ),
+                ))
+            ),
+            new Container(
+              padding: EdgeInsets.fromLTRB(25, 25, 25, 25),
+              child: MyStatefulWidget()
+              ),
             
           ],
         )
@@ -437,17 +487,17 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       value: dropdownValue,
       icon: const Icon(Icons.arrow_downward),
       elevation: 16,
-      style: const TextStyle(color: Color.fromARGB(255, 51, 100, 235)),
+      style: const TextStyle(color: Color.fromARGB(255, 67, 160, 71), fontSize: 19, fontWeight: FontWeight.w300),
       underline: Container(
         height: 2,
-        color: Colors.deepPurpleAccent,
+        color: Colors.green.shade600,
       ),
       onChanged: (String newValue) {
         setState(() {
           dropdownValue = newValue;
         });
       },
-      items: <String>['Yellow container', 'Green container', 'Blue container', 'Brown container']
+      items: <String>['Yellow container', 'Green container', 'Blue container', 'Brown container', 'Local facility']
           .map<DropdownMenuItem<String>>((String value) {
         return DropdownMenuItem<String>(
           value: value,

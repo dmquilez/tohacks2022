@@ -21,6 +21,8 @@ Future<void> main() async {
 
   runApp(
     MaterialApp(
+      debugShowCheckedModeBanner: false,
+
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         primaryColor: Color(0xFFFF00FF),

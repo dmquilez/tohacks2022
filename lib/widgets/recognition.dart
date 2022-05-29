@@ -251,7 +251,6 @@ class _RecognitionState extends State<Recognition> {
         child: ListView.builder(
           itemCount: 1,//se pone uno para que no saque más de una etiqueta
           itemBuilder: (context, index) {
-            _insertCockroach();
             if (first_class.length > index) {
               return Container(
                 height: 40,

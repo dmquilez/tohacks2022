@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:FlutterMobilenet/services/tensorflow-service.dart';
 import 'package:flutter/material.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:screenshot/screenshot.dart';
 
 
 class Recognition extends StatefulWidget {
@@ -72,6 +74,15 @@ class _RecognitionState extends State<Recognition> {
   }
 }
 
+  _launchCamera() async {
+  const url = 'https://flutter.io';
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    throw 'Could not launch $url';
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -103,36 +114,43 @@ class _RecognitionState extends State<Recognition> {
                         ]
                       : <Widget>[],
                 ),
-              ), back: Container(
-              
-                padding: EdgeInsets.only(top: 25, left: 40, right: 30, bottom: 25),
-                child: Row(
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.only(left: 10, right: 10),
-                      width: 60,
-                      height: 60,
-                      child: Image.asset(getImage(),
-                      width: 60,
-                      height: 60,)
-                      /*Text(
-                        _currentRecognition[index]['label'],
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      */
-                    ),
-                    Container(
-                      width: 200,
-                      child: Text(getLabel() + " " +(getFilter() * 100).toString() + '%', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300),),
-                    ),
-                    
-                  ],
-                )
-                
-                
-                
-    )),
+              ), back: Container(decoration: BoxDecoration(
+                  color: getColor(),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                height: 200,
+                width: MediaQuery.of(context).size.width - 30,
+                padding: EdgeInsets.only(top: 15, left: 20, right: 10),
+                child: Column(
+                  children: widget.ready
+                      ? <Widget>[
+                          // shows recognition title
+                          Align(
+                alignment: Alignment.centerLeft,
+                child: new IconButton(
+                                 icon: new Icon(Icons.camera_alt, size: 50, color: Colors.black,),
+                                onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SecondRoute()),
+            );
+          },
+                               ),
+
+            ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    20, 20, 20, 20,
+                  ),),
+                          // shows recognitions list
+                          Align(
+                alignment: Alignment.center,
+                child: Text("PRUEBA", style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300)),
+
+            ),
+                        ]
+                      : <Widget>[],
+                ))),
           ],
         ),
       ),
@@ -269,9 +287,108 @@ class _RecognitionState extends State<Recognition> {
     }
   }
 
+  Widget _infoWidget() {
+    var _width = MediaQuery.of(context).size.width;
+    var _padding = 20.0;
+    var _labelWitdth = 150.0;
+    var _labelConfidence = 30.0;
+    var _barWitdth = _width - _labelWitdth - _labelConfidence - _padding * 2.0;
+
+    if (_currentRecognition.length > 0) {
+      return Container(
+        height: 150,
+        child: ListView.builder(
+          itemCount: 1,//se pone uno para que no saque más de una etiqueta
+          itemBuilder: (context, index) {
+            if (first_class.length > index) {
+              return Container(
+                height: 40,
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.only(left: _padding, right: _padding),
+                      width: _labelWitdth,
+                      child: Image.asset(getImage(),
+                      width: 40,
+                      height: 40,)
+                      /*Text(
+                        _currentRecognition[index]['label'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      */
+                    ),
+                    Container(
+                      width: _barWitdth,
+                      child: Text(getLabel() + " " +(getFilter() * 100).toString() + '%', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300),),
+                    ),
+                    
+                  ],
+                ),
+              );
+            } else {
+              return Container();
+            }
+          },
+        ),
+      );
+    } else {
+      return Text('');
+    }
+  }
+
   @override
   void dispose() {
     _streamSubscription?.cancel();
     super.dispose();
   }
+}
+
+class SecondRoute extends StatelessWidget {
+  const SecondRoute();
+
+  
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Reporting object'),
+      ),
+      body: Center(
+        child: new Column(
+          children: [
+            new Container(
+              child: ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text('Go back!'),
+        ),
+            ),
+            new Container(
+              child: ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            AlertDialog(title: const Text('Thank you!'),
+            content: const Text('Your photo has been reported, thanks for the feedback!'),
+            actions: <Widget>[
+            
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'OK'),
+              child: const Text('Close'),
+            ),
+          ]);
+
+          },
+          child: const Text('Send'),
+        ),
+            )
+          ],
+        )
+        ,
+      ),
+    );
+  }
+  
 }

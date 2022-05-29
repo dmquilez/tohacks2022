@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:FlutterMobilenet/services/tensorflow-service.dart';
 import 'package:flutter/material.dart';
+import 'package:flip_card/flip_card.dart';
+
 
 class Recognition extends StatefulWidget {
   Recognition({Key key, @required this.ready}) : super(key: key);
@@ -18,6 +20,8 @@ enum SubscriptionState { Active, Done }
 class _RecognitionState extends State<Recognition> {
   // current list of recognition
   List<dynamic> _currentRecognition = [];
+
+  String first_class = '';
 
   // listens the changes in tensorflow recognitions
   StreamSubscription _streamSubscription;
@@ -40,9 +44,13 @@ class _RecognitionState extends State<Recognition> {
           // rebuilds the screen with the new recognitions
           setState(() {
             _currentRecognition = recognition;
+
+            first_class = recognition[0]['label'];
+            
           });
         } else {
           _currentRecognition = [];
+          first_class = 'Searching...';
         }
       });
     }
@@ -53,18 +61,20 @@ class _RecognitionState extends State<Recognition> {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-        height: 200,
+        height: 230,
+        
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(
-              child: Container(
+            FlipCard(front: Container(
+                
                 decoration: BoxDecoration(
                   color: Color(0xFF120320),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 height: 200,
-                width: MediaQuery.of(context).size.width,
+                width: MediaQuery.of(context).size.width - 30,
                 child: Column(
                   children: widget.ready
                       ? <Widget>[
@@ -76,8 +86,18 @@ class _RecognitionState extends State<Recognition> {
                         ]
                       : <Widget>[],
                 ),
-              ),
-            ),
+              ), back: Container(
+                padding: EdgeInsets.only(top: 15, left: 20, right: 10),
+                child: Text("Web Page", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w300),),
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 201, 162, 238),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                height: 200,
+                width: MediaQuery.of(context).size.width - 30,
+                
+                
+    )),
           ],
         ),
       ),
@@ -91,12 +111,33 @@ class _RecognitionState extends State<Recognition> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Text(
-            "Recognitions",
+            first_class,
             style: TextStyle(fontSize: 30, fontWeight: FontWeight.w300),
           ),
+            
         ],
       ),
     );
+  }
+
+  getImage(){
+    if(first_class == "plastic"){
+      return "assets/images/amarillo.png";
+    }else if(first_class == "paper"){
+      return "assets/images/papel.png";
+    }else{
+      return "assets/images/ropa.png";
+    }
+  }
+
+  getLabel(){
+    if(first_class == "plastic"){
+      return "Yellow Container";
+    }else if(first_class == "paper"){
+      return "Blue Container";
+    }else{
+      return "ropa";
+    }
   }
 
   Widget _contentWidget() {
@@ -110,9 +151,9 @@ class _RecognitionState extends State<Recognition> {
       return Container(
         height: 150,
         child: ListView.builder(
-          itemCount: _currentRecognition.length,
+          itemCount: 1,//se pone uno para que no saque más de una etiqueta
           itemBuilder: (context, index) {
-            if (_currentRecognition.length > index) {
+            if (first_class.length > index) {
               return Container(
                 height: 40,
                 child: Row(
@@ -120,27 +161,23 @@ class _RecognitionState extends State<Recognition> {
                     Container(
                       padding: EdgeInsets.only(left: _padding, right: _padding),
                       width: _labelWitdth,
-                      child: Text(
+                      child: Image.asset(getLabel(),
+                      width: 50,
+                      height: 50,)
+                      /*Text(
                         _currentRecognition[index]['label'],
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      */
                     ),
                     Container(
                       width: _barWitdth,
-                      child: LinearProgressIndicator(
-                        backgroundColor: Colors.transparent,
-                        value: _currentRecognition[index]['confidence'],
+                      child: Text(
+                        "Yellow container",
                       ),
                     ),
-                    Container(
-                      width: _labelConfidence,
-                      child: Text(
-                        (_currentRecognition[index]['confidence'] * 100).toStringAsFixed(0) + '%',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    )
+                    
                   ],
                 ),
               );

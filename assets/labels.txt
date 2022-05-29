@@ -1,4 +1,7 @@
 batteries
 cardboard
-meatloafplastic
+glass
+metal
+paper
+plastic
 waste

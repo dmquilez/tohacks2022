@@ -347,7 +347,34 @@ class _RecognitionState extends State<Recognition> {
 class SecondRoute extends StatelessWidget {
   const SecondRoute();
 
-  
+
+  showAlertDialog(BuildContext context) {
+
+  // set up the button
+  Widget okButton = TextButton(
+    child: Text("Close"),
+    onPressed: () { 
+      
+    },
+  );
+
+  // set up the AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: Text("Thank you!"),
+    content: Text("Your object photo has been sent correctly. \n\nThank you for the feedback"),
+    actions: [
+      okButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -370,15 +397,7 @@ class SecondRoute extends StatelessWidget {
               child: ElevatedButton(
           onPressed: () {
             Navigator.pop(context);
-            AlertDialog(title: const Text('Thank you!'),
-            content: const Text('Your photo has been reported, thanks for the feedback!'),
-            actions: <Widget>[
-            
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'OK'),
-              child: const Text('Close'),
-            ),
-          ]);
+            showAlertDialog(context);            
 
           },
           child: const Text('Send'),

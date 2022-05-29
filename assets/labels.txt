@@ -1,7 +1,6 @@
 batteries
 cardboard
 glass
-metal
 paper
 plastic
 waste

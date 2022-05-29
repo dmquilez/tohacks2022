@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:FlutterMobilenet/services/tensorflow-service.dart';
 import 'package:flutter/material.dart';
 import 'package:flip_card/flip_card.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class Recognition extends StatefulWidget {
@@ -21,8 +22,13 @@ class _RecognitionState extends State<Recognition> {
   // current list of recognition
   List<dynamic> _currentRecognition = [];
 
+  static const url = 'https://flutter.io';
   String first_class = '';
+  double first_class_confidence = 0;
+  String onFlip = '';
+  String capitalize(String first_class) => first_class[0].toUpperCase() + first_class.substring(1);
 
+  
   // listens the changes in tensorflow recognitions
   StreamSubscription _streamSubscription;
 
@@ -45,7 +51,8 @@ class _RecognitionState extends State<Recognition> {
           setState(() {
             _currentRecognition = recognition;
 
-            first_class = recognition[0]['label'];
+            first_class = capitalize(recognition[0]['label']);
+            first_class_confidence = recognition[0]['confidence'];
             
           });
         } else {
@@ -56,6 +63,15 @@ class _RecognitionState extends State<Recognition> {
     }
   }
 
+  _launchURL() async {
+  const url = 'https://flutter.io';
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    throw 'Could not launch $url';
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -64,13 +80,14 @@ class _RecognitionState extends State<Recognition> {
         height: 230,
         
         child: Column(
+          
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             FlipCard(front: Container(
                 
                 decoration: BoxDecoration(
-                  color: Color(0xFF120320),
+                  color: getColor(),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 height: 200,
@@ -88,7 +105,7 @@ class _RecognitionState extends State<Recognition> {
                 ),
               ), back: Container(
                 padding: EdgeInsets.only(top: 15, left: 20, right: 10),
-                child: Text("Web Page", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w300),),
+                child: new ElevatedButton(onPressed: _launchURL,child: Text("More info here", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w300))),
                 decoration: BoxDecoration(
                   color: Color.fromARGB(255, 201, 162, 238),
                   borderRadius: BorderRadius.circular(10),
@@ -121,22 +138,66 @@ class _RecognitionState extends State<Recognition> {
   }
 
   getImage(){
-    if(first_class == "plastic"){
+    if(first_class == "Plastic"){
       return "assets/images/amarillo.png";
-    }else if(first_class == "paper"){
+    }else if(first_class == "Paper"){
       return "assets/images/papel.png";
+    }else if(first_class == "Cardboard"){
+      return "assets/images/papel.png";
+    }else if(first_class == "Glass"){
+      return "assets/images/verde.png";
+    }else if(first_class == "Batteries"){
+      return "assets/images/contenedorPilas.png";
+    }else if(first_class == "Waste"){
+      return "assets/images/organico.png";
     }else{
-      return "assets/images/ropa.png";
+      return "assets/images/organico.png";
     }
+    //es probable que haya que meter un else para que no pete
   }
 
   getLabel(){
-    if(first_class == "plastic"){
-      return "Yellow Container";
-    }else if(first_class == "paper"){
-      return "Blue Container";
+    if(first_class == "Plastic"){
+      return "Yellow container";
+    }else if(first_class == "Paper"){
+      return "Blue container";
+    }else if(first_class == "Cardboard"){
+      return "Blue container";
+    }else if(first_class == "Glass"){
+      return "Green container";
+    }else if(first_class == "Batteries"){
+      return "Battery container";
+    }else if(first_class == "Waste"){
+      return "Brown container";
     }else{
-      return "ropa";
+      return "Brown container";
+    }
+  }
+
+  getColor(){
+    if(first_class == "Plastic"){
+      return Color.fromARGB(255, 170, 177, 69);
+    }else if(first_class == "Paper"){
+      return Color.fromARGB(255, 69, 128, 177);
+    }else if(first_class == "Cardboard"){
+      return Color.fromARGB(255, 69, 128, 177);
+    }else if(first_class == "Glass"){
+      return Color.fromARGB(255, 69, 177, 101);
+    }else if(first_class == "Batteries"){
+      return Color.fromARGB(255, 87, 174, 231);
+    }else if(first_class == "Waste"){
+      return Color.fromARGB(255, 197, 140, 53);
+    }else{
+      return Color.fromARGB(255, 197, 140, 53);
+    }
+  }
+
+  getFilter(){
+    if(first_class_confidence * 100 >= 40.0){
+        return first_class_confidence;
+    }
+    else{
+      return '';
     }
   }
 
@@ -161,9 +222,9 @@ class _RecognitionState extends State<Recognition> {
                     Container(
                       padding: EdgeInsets.only(left: _padding, right: _padding),
                       width: _labelWitdth,
-                      child: Image.asset(getLabel(),
-                      width: 50,
-                      height: 50,)
+                      child: Image.asset(getImage(),
+                      width: 120,
+                      height: 120,)
                       /*Text(
                         _currentRecognition[index]['label'],
                         maxLines: 1,
@@ -173,9 +234,7 @@ class _RecognitionState extends State<Recognition> {
                     ),
                     Container(
                       width: _barWitdth,
-                      child: Text(
-                        "Yellow container",
-                      ),
+                      child: Text(getLabel() + " " +(getFilter() * 100).toString() + '%', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300),),
                     ),
                     
                   ],

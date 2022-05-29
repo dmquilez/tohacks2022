@@ -1,6 +1,10 @@
 batteries
 cardboard
+computer
 glass
+microwave
 paper
-plastic
+plastic_bags
+plastic_bottles
+plastic_brik
 waste

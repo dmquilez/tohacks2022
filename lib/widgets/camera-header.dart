@@ -12,9 +12,9 @@ class CameraHeader extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Image(
-              image: AssetImage('assets/white_logo.png'),
-              height: 40,
-              width: 40,
+              image: AssetImage('assets/images/recycle.gif'),
+              height: 80,
+              width: 80,
             ),
           ],
         ),

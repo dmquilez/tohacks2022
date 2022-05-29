@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:FlutterMobilenet/services/tensorflow-service.dart';
 import 'package:flutter/material.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:screenshot/screenshot.dart';
+import 'package:postgres/postgres.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 class Recognition extends StatefulWidget {
@@ -20,6 +20,8 @@ class Recognition extends StatefulWidget {
 // to track the subscription state during the lifecicle of the component
 enum SubscriptionState { Active, Done }
 
+
+
 class _RecognitionState extends State<Recognition> {
   // current list of recognition
   List<dynamic> _currentRecognition = [];
@@ -29,7 +31,6 @@ class _RecognitionState extends State<Recognition> {
   double first_class_confidence = 0;
   String onFlip = '';
   String capitalize(String first_class) => first_class[0].toUpperCase() + first_class.substring(1);
-
   
   // listens the changes in tensorflow recognitions
   StreamSubscription _streamSubscription;
@@ -74,15 +75,6 @@ class _RecognitionState extends State<Recognition> {
   }
 }
 
-  _launchCamera() async {
-  const url = 'https://flutter.io';
-  if (await canLaunch(url)) {
-    await launch(url);
-  } else {
-    throw 'Could not launch $url';
-  }
-}
-
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -114,43 +106,36 @@ class _RecognitionState extends State<Recognition> {
                         ]
                       : <Widget>[],
                 ),
-              ), back: Container(decoration: BoxDecoration(
-                  color: getColor(),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                height: 200,
-                width: MediaQuery.of(context).size.width - 30,
-                padding: EdgeInsets.only(top: 15, left: 20, right: 10),
-                child: Column(
-                  children: widget.ready
-                      ? <Widget>[
-                          // shows recognition title
-                          Align(
-                alignment: Alignment.centerLeft,
-                child: new IconButton(
-                                 icon: new Icon(Icons.camera_alt, size: 50, color: Colors.black,),
-                                onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SecondRoute()),
-            );
-          },
-                               ),
-
-            ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    20, 20, 20, 20,
-                  ),),
-                          // shows recognitions list
-                          Align(
-                alignment: Alignment.center,
-                child: Text("PRUEBA", style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300)),
-
-            ),
-                        ]
-                      : <Widget>[],
-                ))),
+              ), back: Container(
+              
+                padding: EdgeInsets.only(top: 25, left: 40, right: 30, bottom: 25),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.only(left: 10, right: 10),
+                      width: 60,
+                      height: 60,
+                      child: Image.asset(getImage(),
+                      width: 60,
+                      height: 60,)
+                      /*Text(
+                        _currentRecognition[index]['label'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      */
+                    ),
+                    Container(
+                      width: 200,
+                      child: Text(getLabel() + " " +(getFilter() * 100).toString() + '%', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300),),
+                    ),
+                    
+                  ],
+                )
+                
+                
+                
+    )),
           ],
         ),
       ),
@@ -172,6 +157,9 @@ class _RecognitionState extends State<Recognition> {
       ),
     );
   }
+
+
+
 
   getImage(){
     if(first_class == "Plastic"){
@@ -237,6 +225,19 @@ class _RecognitionState extends State<Recognition> {
     }
   }
 
+   _insertCockroach() async {
+   try {
+     var connection = PostgreSQLConnection(dotenv.env["COCKROACHDB_HOST"], 26257, dotenv.env["COCKROACHDB_DATABASE"], username: dotenv.env["COCKROACHDB_USER"], password: dotenv.env["COCKROACHDB_PASSWORD"], useSSL: true, allowClearTextPassword: true);
+    await connection.open();
+    print("Connected to CockroachDB!");
+
+   } catch (e) {
+     print(e);
+   }
+    
+
+  }
+
   Widget _contentWidget() {
     var _width = MediaQuery.of(context).size.width;
     var _padding = 20.0;
@@ -250,6 +251,7 @@ class _RecognitionState extends State<Recognition> {
         child: ListView.builder(
           itemCount: 1,//se pone uno para que no saque más de una etiqueta
           itemBuilder: (context, index) {
+            _insertCockroach();
             if (first_class.length > index) {
               return Container(
                 height: 40,
@@ -261,56 +263,6 @@ class _RecognitionState extends State<Recognition> {
                       child: Image.asset(getImage(),
                       width: 120,
                       height: 120,)
-                      /*Text(
-                        _currentRecognition[index]['label'],
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      */
-                    ),
-                    Container(
-                      width: _barWitdth,
-                      child: Text(getLabel() + " " +(getFilter() * 100).toString() + '%', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300),),
-                    ),
-                    
-                  ],
-                ),
-              );
-            } else {
-              return Container();
-            }
-          },
-        ),
-      );
-    } else {
-      return Text('');
-    }
-  }
-
-  Widget _infoWidget() {
-    var _width = MediaQuery.of(context).size.width;
-    var _padding = 20.0;
-    var _labelWitdth = 150.0;
-    var _labelConfidence = 30.0;
-    var _barWitdth = _width - _labelWitdth - _labelConfidence - _padding * 2.0;
-
-    if (_currentRecognition.length > 0) {
-      return Container(
-        height: 150,
-        child: ListView.builder(
-          itemCount: 1,//se pone uno para que no saque más de una etiqueta
-          itemBuilder: (context, index) {
-            if (first_class.length > index) {
-              return Container(
-                height: 40,
-                child: Row(
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.only(left: _padding, right: _padding),
-                      width: _labelWitdth,
-                      child: Image.asset(getImage(),
-                      width: 40,
-                      height: 40,)
                       /*Text(
                         _currentRecognition[index]['label'],
                         maxLines: 1,

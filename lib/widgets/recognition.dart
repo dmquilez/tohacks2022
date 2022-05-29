@@ -104,14 +104,32 @@ class _RecognitionState extends State<Recognition> {
                       : <Widget>[],
                 ),
               ), back: Container(
-                padding: EdgeInsets.only(top: 15, left: 20, right: 10),
-                child: new ElevatedButton(onPressed: _launchURL,child: Text("More info here", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w300))),
-                decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 201, 162, 238),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                height: 200,
-                width: MediaQuery.of(context).size.width - 30,
+              
+                padding: EdgeInsets.only(top: 25, left: 40, right: 30, bottom: 25),
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.only(left: 10, right: 10),
+                      width: 60,
+                      height: 60,
+                      child: Image.asset(getImage(),
+                      width: 60,
+                      height: 60,)
+                      /*Text(
+                        _currentRecognition[index]['label'],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      */
+                    ),
+                    Container(
+                      width: 200,
+                      child: Text(getLabel() + " " +(getFilter() * 100).toString() + '%', style: TextStyle(fontSize: 19, fontWeight: FontWeight.w300),),
+                    ),
+                    
+                  ],
+                )
+                
                 
                 
     )),
